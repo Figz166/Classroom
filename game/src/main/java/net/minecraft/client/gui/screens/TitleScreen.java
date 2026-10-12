@@ -119,12 +119,18 @@ public class TitleScreen extends Screen {
          CommonButtons.accessibility(20, var1x -> this.minecraft.gui.setScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), true)
       );
       accessibility.setPosition(this.getHorizontalPosition(++currentButton, numberOfButtons, 20), topPos);
-      Button.Builder var10001 = Button.builder(
-         Component.translatable("menu.options"), var1x -> this.minecraft.gui.setScreen(new OptionsScreen(this, this.minecraft.options, false))
-      );
       int var10002 = this.width / 2 - 100;
       topPos += 24;
-      this.addRenderableWidget(var10001.bounds(var10002, topPos, 98, 20).build());
+      this.addRenderableWidget(
+         Button.builder(Component.literal("Fig Mods"), var1x -> this.minecraft.gui.setScreen(
+            new net.minecraft.client.gui.screens.options.FigModulesScreen(this, this.minecraft.options)
+         )).bounds(var10002, topPos, 98, 20).build()
+      );
+      this.addRenderableWidget(
+         Button.builder(Component.literal("Relays"), var1x -> this.minecraft.gui.setScreen(
+            new net.lax1dude.eaglercraft.v1_8.sp.gui.RelaySettingsScreen(this)
+         )).bounds(this.width / 2 + 2, topPos, 98, 20).build()
+      );
       boolean eaglerHosted = net.lax1dude.eaglercraft.v1_8.minecraft.EaglerHosted.isActive();
       this.addRenderableWidget(
          Button.builder(eaglerHosted ? Component.translatableWithFallback("menu.credits", "Credits") : Component.translatable("menu.quit"), var1x -> {
@@ -133,7 +139,7 @@ public class TitleScreen extends Screen {
             } else {
                this.minecraft.stop();
             }
-         }).bounds(this.width / 2 + 2, topPos, 98, 20).build()
+         }).bounds(this.width / 2 + 2, topPos + 24, 98, 20).build()
       );
       this.addRenderableWidget(
          new PlainTextButton(
@@ -360,7 +366,9 @@ public class TitleScreen extends Screen {
       }
 
       if (net.lax1dude.eaglercraft.v1_8.minecraft.EaglerHosted.isActive()) {
-         // Eagler branding (kept minimal per Matej)
+         // Minimal client branding: keep the Eagler credit line, but make the
+         // running client visibly identify itself as Fig Client on the title screen.
+         graphics.text(this.font, Component.literal("Fig Client"), 2, this.height - 30, ARGB.white(widgetFade));
          graphics.text(this.font, Component.translatableWithFallback("eagler.menu.brand", "Eaglercraft %s",
                   net.lax1dude.eaglercraft.v1_8.EaglercraftVersion.projectForkVersion),
             2, this.height - 20, ARGB.white(widgetFade));
@@ -368,6 +376,7 @@ public class TitleScreen extends Screen {
                   net.lax1dude.eaglercraft.v1_8.EaglercraftVersion.projectForkVendor),
             2, this.height - 10, ARGB.white(widgetFade));
       } else {
+         graphics.text(this.font, Component.literal("Fig Client"), 2, this.height - 20, ARGB.white(widgetFade));
          graphics.text(this.font, versionString, 2, this.height - 10, ARGB.white(widgetFade));
       }
    }

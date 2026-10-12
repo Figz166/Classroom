@@ -329,6 +329,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public @Nullable HitResult hitResult;
    private int rightClickDelay;
    protected int missTime;
+   private ItemStack figClientLastHeldItem = ItemStack.EMPTY;
+   private int figClientLastHeldSlot = -1;
    private volatile boolean pause;
    private long lastNanoTime = Util.getNanos();
    private long lastTime;
@@ -2152,6 +2154,18 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.options.smoothCamera = !this.options.smoothCamera;
       }
 
+      while (this.options.keyToggleFigModules.consumeClick()) {
+         if (this.player != null) {
+            this.gui.setScreen(new net.minecraft.client.gui.screens.options.FigModulesScreen(this.gui.screen(), this.options));
+         }
+      }
+
+      while (this.options.keyToggleChunkSaver.consumeClick()) {
+         this.options.figClientChunkSaver().set(!this.options.figClientChunkSaver().get());
+      }
+
+      this.tryFigAutoRefill();
+
       this.gui.handleKeybinds();
 
       while (this.options.keyToggleSpectatorShaderEffects.consumeClick()) {
@@ -2239,6 +2253,50 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.continueAttack(this.gui.screen() == null && !instantAttack && this.options.keyAttack.isDown()
          && (this.mouseHandler.isMouseGrabbed()
             || net.lax1dude.eaglercraft.v1_8.touch_gui.TouchControls26.isEnabled()));
+   }
+
+   private void tryFigAutoRefill() {
+      if (this.player == null
+         || this.gameMode == null
+         || !this.options.figClientAutoRefill().get()
+         || !this.isLocalServer()
+         || this.isMultiplayerServer()
+         || this.player.containerMenu != this.player.inventoryMenu) {
+         this.figClientLastHeldItem = ItemStack.EMPTY;
+         this.figClientLastHeldSlot = -1;
+         return;
+      }
+
+      int selectedSlot = this.player.getInventory().getSelectedSlot();
+      ItemStack heldItem = this.player.getMainHandItem();
+      if (!heldItem.isEmpty()) {
+         this.figClientLastHeldItem = heldItem.copy();
+         this.figClientLastHeldSlot = selectedSlot;
+         return;
+      }
+
+      if (this.figClientLastHeldItem.isEmpty() || this.figClientLastHeldSlot != selectedSlot) {
+         this.figClientLastHeldItem = ItemStack.EMPTY;
+         this.figClientLastHeldSlot = -1;
+         return;
+      }
+
+      ItemStack previousItem = this.figClientLastHeldItem;
+      this.figClientLastHeldItem = ItemStack.EMPTY;
+      this.figClientLastHeldSlot = -1;
+      for (int inventorySlot = 9; inventorySlot < 36; inventorySlot++) {
+         ItemStack candidate = this.player.inventoryMenu.getSlot(inventorySlot).getItem();
+         if (!candidate.isEmpty() && ItemStack.isSameItem(candidate, previousItem)) {
+            this.gameMode.handleContainerInput(
+               this.player.inventoryMenu.containerId,
+               inventorySlot,
+               selectedSlot,
+               net.minecraft.world.inventory.ContainerInput.SWAP,
+               this.player
+            );
+            break;
+         }
+      }
    }
 
    private Optional<Holder<Dialog>> getQuickActionsDialog() {

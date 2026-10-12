@@ -1330,7 +1330,10 @@ public class Hud {
    }
 
    private Hud.ContextualInfo nextContextualInfoState() {
-      boolean canShowLocatorInfo = this.minecraft.player.connection.getWaypointManager().hasWaypoints();
+      boolean canShowDeathWaypoint = this.minecraft.player.getLastDeathLocation()
+         .filter(deathLocation -> deathLocation.dimension().equals(this.minecraft.player.level().dimension()))
+         .isPresent();
+      boolean canShowLocatorInfo = this.minecraft.player.connection.getWaypointManager().hasWaypoints() || canShowDeathWaypoint;
       boolean canShowVehicleJumpInfo = this.minecraft.player.jumpableVehicle() != null;
       boolean canShowExperienceInfo = this.minecraft.gameMode.hasExperience();
       if (canShowLocatorInfo) {

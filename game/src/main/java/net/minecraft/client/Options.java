@@ -105,6 +105,21 @@ public class Options {
    }, OptionInstance.UnitDouble.INSTANCE, 0.5, OptionInstance.NO_ACTION);
    private final OptionInstance<Integer> renderDistance;
    private final OptionInstance<Integer> simulationDistance;
+   private final OptionInstance<Boolean> figClientFullbright = OptionInstance.createBoolean(
+      "figClientFullbright", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientChunkSaver = OptionInstance.createBoolean(
+      "figClientChunkSaver", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientEntityCulling = OptionInstance.createBoolean(
+      "figClientEntityCulling", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientAutoRefill = OptionInstance.createBoolean(
+      "figClientAutoRefill", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientXray = OptionInstance.createBoolean(
+      "figClientXray", OptionInstance.noTooltip(), false, value -> operateOnLevelExtractor(LevelExtractor::allChanged)
+   );
    private int serverRenderDistance = 0;
    private final OptionInstance<Double> entityDistanceScaling = new OptionInstance<>(
       "options.entityDistanceScaling",
@@ -162,7 +177,7 @@ public class Options {
       GraphicsPreset.CODEC,
       // Eagler (web): the preset is re-applied EVERY boot (Minecraft.<init>), so the
       // default preset decides the real defaults. FAST on web (Matej 2026-07-11) —
-      // and GraphicsPreset.FAST itself is web-tuned to renderDistance 6 / sim 5.
+      // and GraphicsPreset.FAST itself is web-tuned to renderDistance 3 / sim 3.
       net.lax1dude.eaglercraft.v1_8.minecraft.EaglerHosted.webGpuBackendFactory != null
          ? GraphicsPreset.FAST
          : GraphicsPreset.FANCY,
@@ -703,6 +718,8 @@ public class Options {
    public final KeyMapping keySocialInteractions = new KeyMapping("key.socialInteractions", 80, KeyMapping.Category.MULTIPLAYER);
    public final KeyMapping keyScreenshot = new KeyMapping("key.screenshot", 291, KeyMapping.Category.MISC);
    public final KeyMapping keyTogglePerspective = new KeyMapping("key.togglePerspective", 294, KeyMapping.Category.MISC);
+   public final KeyMapping keyToggleFigModules = new KeyMapping("key.fig.modules", InputConstants.Type.KEYSYM, InputConstants.KEY_RSHIFT, KeyMapping.Category.MISC);
+   public final KeyMapping keyToggleChunkSaver = new KeyMapping("key.fig.chunkSaver", InputConstants.Type.KEYSYM, InputConstants.KEY_RALT, KeyMapping.Category.MISC);
    public final KeyMapping keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
    public final KeyMapping keyFullscreen = new KeyMapping("key.fullscreen", 300, KeyMapping.Category.MISC);
    public final KeyMapping keyAdvancements = new KeyMapping("key.advancements", 76, KeyMapping.Category.MISC);
@@ -799,6 +816,8 @@ public class Options {
             this.keyToggleSpectatorShaderEffects,
             this.keyScreenshot,
             this.keyTogglePerspective,
+            this.keyToggleFigModules,
+            this.keyToggleChunkSaver,
             this.keySmoothCamera,
             this.keyFullscreen,
             this.keySpectatorOutlines,
@@ -1043,6 +1062,26 @@ public class Options {
 
    public OptionInstance<Integer> simulationDistance() {
       return this.simulationDistance;
+   }
+
+   public OptionInstance<Boolean> figClientFullbright() {
+      return this.figClientFullbright;
+   }
+
+   public OptionInstance<Boolean> figClientChunkSaver() {
+      return this.figClientChunkSaver;
+   }
+
+   public OptionInstance<Boolean> figClientEntityCulling() {
+      return this.figClientEntityCulling;
+   }
+
+   public OptionInstance<Boolean> figClientAutoRefill() {
+      return this.figClientAutoRefill;
+   }
+
+   public OptionInstance<Boolean> figClientXray() {
+      return this.figClientXray;
    }
 
    public OptionInstance<Double> entityDistanceScaling() {
@@ -1517,7 +1556,7 @@ public class Options {
       this.optionsFile = new File(workingDirectory, "options.txt");
       boolean largeDistances = Runtime.getRuntime().maxMemory() >= 1000000000L;
       // Eagler (web): single-thread meshing + worldgen make big view distances the #1
-      // frame-time cost — default 6/5 chunks (eag26 low-end profile; Matej 2026-07-11).
+      // frame-time cost — default 3/3 chunks (eag26 low-end profile).
       // A saved options.txt still overrides these defaults via load() below.
       boolean eaglerWeb = net.lax1dude.eaglercraft.v1_8.minecraft.EaglerHosted.webGpuBackendFactory != null;
       this.renderDistance = new OptionInstance<>(
@@ -1594,6 +1633,11 @@ public class Options {
       access.process("cloudRange", this.cloudRange);
       access.process("renderDistance", this.renderDistance);
       access.process("simulationDistance", this.simulationDistance);
+      access.process("figClientFullbright", this.figClientFullbright);
+      access.process("figClientChunkSaver", this.figClientChunkSaver);
+      access.process("figClientEntityCulling", this.figClientEntityCulling);
+      access.process("figClientAutoRefill", this.figClientAutoRefill);
+      access.process("figClientXray", this.figClientXray);
       access.process("screenEffectScale", this.screenEffectScale);
       access.process("soundDevice", this.soundDevice);
       access.process("vignette", this.vignette);
@@ -2081,7 +2125,7 @@ public class Options {
 
       return new ClientInformation(
          this.languageCode,
-         this.renderDistance.get(),
+         this.getEffectiveRenderDistance(),
          this.chatVisibility.get(),
          this.chatColors.get(),
          parts,
@@ -2203,7 +2247,12 @@ public class Options {
    }
 
    public int getEffectiveRenderDistance() {
-      return this.serverRenderDistance > 0 ? Math.min(this.renderDistance.get(), this.serverRenderDistance) : this.renderDistance.get();
+      int requestedDistance = this.figClientChunkSaver.get() ? Math.min(this.renderDistance.get(), 2) : this.renderDistance.get();
+      return this.serverRenderDistance > 0 ? Math.min(requestedDistance, this.serverRenderDistance) : requestedDistance;
+   }
+
+   public int getEffectiveSimulationDistance() {
+      return this.figClientChunkSaver.get() ? Math.min(this.simulationDistance.get(), 2) : this.simulationDistance.get();
    }
 
    private static Component pixelValueLabel(final Component caption, final int value) {

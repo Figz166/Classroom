@@ -884,6 +884,9 @@ public class LevelRenderer implements AutoCloseable {
       SectionCompiler sectionCompiler = new SectionCompiler(
          options.ambientOcclusion().get(),
          options.cutoutLeaves().get(),
+         options.figClientXray().get()
+            && Minecraft.getInstance().isLocalServer()
+            && !Minecraft.getInstance().isMultiplayerServer(),
          this.modelManager.getBlockStateModelSet(),
          this.modelManager.getFluidStateModelSet(),
          blockColors

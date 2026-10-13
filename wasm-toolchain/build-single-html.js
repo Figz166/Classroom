@@ -164,6 +164,7 @@ function verifyReusableArtifact(file, flag, target, label) {
 function prepareBaseAssets() {
   run("./gradlew", [
     ":target_lwjgl_desktop:buildAssetsEPK",
+    ":target_lwjgl_desktop:buildSoundsEPK",
     "--console=plain",
     "--no-daemon",
     "--max-workers=1",
@@ -171,11 +172,16 @@ function prepareBaseAssets() {
     "-Dorg.gradle.jvmargs=-Xmx4096m -Xss4m -XX:MaxMetaspaceSize=768m -XX:+UseG1GC"
   ]);
   const packed = path.join(repo, "target_lwjgl_desktop", "build", "epk", "assets.epk");
+  const packedSounds = path.join(repo, "target_lwjgl_desktop", "build", "epk", "sounds.epk");
   const hosted = path.join(repo, "target_teavm", "build", "web", "assets.epk");
+  const hostedSounds = path.join(repo, "target_teavm", "build", "web", "sounds.epk");
   if (!fs.existsSync(packed)) fail("buildAssetsEPK completed without producing assets.epk");
+  if (!fs.existsSync(packedSounds)) fail("buildSoundsEPK completed without producing sounds.epk");
   fs.mkdirSync(path.dirname(hosted), { recursive: true });
   fs.copyFileSync(packed, hosted);
+  fs.copyFileSync(packedSounds, hostedSounds);
   console.log(`[single-html] Installed source-matched assets.epk (${fs.statSync(hosted).size.toLocaleString()} bytes)`);
+  console.log(`[single-html] Installed source-matched sounds.epk (${fs.statSync(hostedSounds).size.toLocaleString()} bytes)`);
 }
 
 function compressedWasm(name, bytes) {

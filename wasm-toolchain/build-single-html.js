@@ -348,7 +348,8 @@ const meshWasm = read("mesh-worker.wasm");
 const serverWasm = read("server-worker.wasm");
 const assets = read("assets.epk");
 const sounds = read("sounds.epk");
-if (!fs.existsSync(musicSource)) {
+const hasMusicSource = fs.existsSync(musicSource);
+if (withMusic && !hasMusicSource) {
   fail(`missing music EPK at ${musicSource}; build the regular TeaVM web assets first`);
 }
 const music = withMusic ? fs.readFileSync(musicSource) : null;
@@ -712,7 +713,7 @@ console.log(`  music.epk:       ${(music ? music.length : 0).toLocaleString()} B
 console.log(`  output HTML:     ${outputBytes.toLocaleString()} B (${(outputBytes / 1_000_000).toFixed(2)} MB)`);
 console.log(`[single-html] wrote ${output}`);
 
-if (withoutMusic) {
+if (withoutMusic && hasMusicSource) {
   const musicPack = spawnSync(process.execPath, [
     path.join(repo, "wasm-toolchain", "export-music-resource-pack.js"),
     musicSource,
@@ -720,6 +721,8 @@ if (withoutMusic) {
   ], { cwd: repo, stdio: "inherit" });
   if (musicPack.error) fail(musicPack.error.message);
   if (musicPack.status !== 0) fail(`optional music pack export exited with code ${musicPack.status}`);
+} else if (withoutMusic) {
+  console.log("[single-html] optional music pack omitted because music.epk is unavailable");
 }
 
 if (withoutMusic && outputBytes > target && !diagnosticBuild && !fastPackage) {

@@ -51,6 +51,7 @@ import net.minecraft.client.sounds.SoundEngine;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.SoundPreviewHandler;
 import net.minecraft.client.tutorial.TutorialSteps;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
@@ -107,6 +108,42 @@ public class Options {
    private final OptionInstance<Integer> simulationDistance;
    private final OptionInstance<Boolean> figClientFullbright = OptionInstance.createBoolean(
       "figClientFullbright", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientZoom = OptionInstance.createBoolean(
+      "figClientZoom", OptionInstance.noTooltip(), true
+   );
+   private final OptionInstance<Boolean> figClientCompass = OptionInstance.createBoolean(
+      "figClientCompass", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientEquipmentHud = OptionInstance.createBoolean(
+      "figClientEquipmentHud", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientInventoryAlerts = OptionInstance.createBoolean(
+      "figClientInventoryAlerts", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<String> figClientBlockSearch = new OptionInstance<>(
+      "figClientBlockSearch",
+      OptionInstance.noTooltip(),
+      (caption, value) -> Component.literal(value),
+      new OptionInstance.LazyEnum<>(() -> List.of(""), Optional::of, Codec.STRING),
+      "",
+      OptionInstance.NO_ACTION
+   );
+   private final OptionInstance<String> figClientLatestDeath = new OptionInstance<>(
+      "figClientLatestDeath",
+      OptionInstance.noTooltip(),
+      (caption, value) -> Component.literal(value),
+      new OptionInstance.LazyEnum<>(() -> List.of(""), Optional::of, Codec.STRING),
+      "",
+      OptionInstance.NO_ACTION
+   );
+   private final OptionInstance<String> figClientPreviousDeath = new OptionInstance<>(
+      "figClientPreviousDeath",
+      OptionInstance.noTooltip(),
+      (caption, value) -> Component.literal(value),
+      new OptionInstance.LazyEnum<>(() -> List.of(""), Optional::of, Codec.STRING),
+      "",
+      OptionInstance.NO_ACTION
    );
    private final OptionInstance<Boolean> figClientChunkSaver = OptionInstance.createBoolean(
       "figClientChunkSaver", OptionInstance.noTooltip(), false
@@ -719,6 +756,7 @@ public class Options {
    public final KeyMapping keyScreenshot = new KeyMapping("key.screenshot", 291, KeyMapping.Category.MISC);
    public final KeyMapping keyTogglePerspective = new KeyMapping("key.togglePerspective", 294, KeyMapping.Category.MISC);
    public final KeyMapping keyToggleFigModules = new KeyMapping("key.fig.modules", InputConstants.Type.KEYSYM, InputConstants.KEY_RSHIFT, KeyMapping.Category.MISC);
+   public final KeyMapping keyFigZoom = new KeyMapping("key.fig.zoom", InputConstants.Type.KEYSYM, 67, KeyMapping.Category.MISC);
    public final KeyMapping keyToggleChunkSaver = new KeyMapping("key.fig.chunkSaver", InputConstants.Type.KEYSYM, InputConstants.KEY_RALT, KeyMapping.Category.MISC);
    public final KeyMapping keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
    public final KeyMapping keyFullscreen = new KeyMapping("key.fullscreen", 300, KeyMapping.Category.MISC);
@@ -817,6 +855,7 @@ public class Options {
             this.keyScreenshot,
             this.keyTogglePerspective,
             this.keyToggleFigModules,
+            this.keyFigZoom,
             this.keyToggleChunkSaver,
             this.keySmoothCamera,
             this.keyFullscreen,
@@ -1066,6 +1105,39 @@ public class Options {
 
    public OptionInstance<Boolean> figClientFullbright() {
       return this.figClientFullbright;
+   }
+
+   public OptionInstance<Boolean> figClientZoom() {
+      return this.figClientZoom;
+   }
+
+   public OptionInstance<Boolean> figClientCompass() {
+      return this.figClientCompass;
+   }
+
+   public OptionInstance<Boolean> figClientEquipmentHud() {
+      return this.figClientEquipmentHud;
+   }
+
+   public OptionInstance<Boolean> figClientInventoryAlerts() {
+      return this.figClientInventoryAlerts;
+   }
+
+   public OptionInstance<String> figClientBlockSearch() {
+      return this.figClientBlockSearch;
+   }
+
+   public OptionInstance<String> figClientLatestDeath() {
+      return this.figClientLatestDeath;
+   }
+
+   public OptionInstance<String> figClientPreviousDeath() {
+      return this.figClientPreviousDeath;
+   }
+
+   public void recordFigDeathWaypoint(final BlockPos position, final String dimension) {
+      this.figClientPreviousDeath.set(this.figClientLatestDeath.get());
+      this.figClientLatestDeath.set(dimension + "|" + position.getX() + "|" + position.getY() + "|" + position.getZ());
    }
 
    public OptionInstance<Boolean> figClientChunkSaver() {
@@ -1634,6 +1706,13 @@ public class Options {
       access.process("renderDistance", this.renderDistance);
       access.process("simulationDistance", this.simulationDistance);
       access.process("figClientFullbright", this.figClientFullbright);
+      access.process("figClientZoom", this.figClientZoom);
+      access.process("figClientCompass", this.figClientCompass);
+      access.process("figClientEquipmentHud", this.figClientEquipmentHud);
+      access.process("figClientInventoryAlerts", this.figClientInventoryAlerts);
+      access.process("figClientBlockSearch", this.figClientBlockSearch);
+      access.process("figClientLatestDeath", this.figClientLatestDeath);
+      access.process("figClientPreviousDeath", this.figClientPreviousDeath);
       access.process("figClientChunkSaver", this.figClientChunkSaver);
       access.process("figClientEntityCulling", this.figClientEntityCulling);
       access.process("figClientAutoRefill", this.figClientAutoRefill);

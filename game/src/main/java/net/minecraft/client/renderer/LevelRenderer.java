@@ -89,6 +89,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.material.FogType;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Matrix4fc;
@@ -353,6 +354,7 @@ public class LevelRenderer implements AutoCloseable {
       if (renderOutline) {
          this.submitBlockOutline(poseStack, this.submitNodeStorage, levelRenderState);
       }
+      this.submitFigBlockSearchOutlines(poseStack, submitNodeCollector, levelRenderState);
 
       this.finalizeGizmoCollection();
       this.finalizedGizmos.standardPrimitives().submit(submitNodeCollector, levelRenderState.cameraRenderState, false);
@@ -814,6 +816,19 @@ public class LevelRenderer implements AutoCloseable {
       }
    }
 
+   private void submitFigBlockSearchOutlines(
+      final PoseStack poseStack, final SubmitNodeCollector submitNodeCollector, final LevelRenderState levelRenderState
+   ) {
+      Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
+      for (BlockPos pos : net.minecraft.client.gui.screens.options.FigBlockSearch.matches()) {
+         poseStack.pushPose();
+         poseStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
+         submitNodeCollector.submitShapeOutline(poseStack, Shapes.block(), RenderTypes.lines(), 0xFF62D7F4,
+            this.gameRenderer.gameRenderState().windowRenderState.appropriateLineWidth, false);
+         poseStack.popPose();
+      }
+   }
+
    private void submitHitOutline(
       final PoseStack poseStack,
       final SubmitNodeCollector submitNodeCollector,
@@ -884,9 +899,7 @@ public class LevelRenderer implements AutoCloseable {
       SectionCompiler sectionCompiler = new SectionCompiler(
          options.ambientOcclusion().get(),
          options.cutoutLeaves().get(),
-         options.figClientXray().get()
-            && Minecraft.getInstance().isLocalServer()
-            && !Minecraft.getInstance().isMultiplayerServer(),
+         options.figClientXray().get(),
          this.modelManager.getBlockStateModelSet(),
          this.modelManager.getFluidStateModelSet(),
          blockColors

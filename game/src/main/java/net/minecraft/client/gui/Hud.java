@@ -27,6 +27,7 @@ import net.minecraft.client.gui.contextualbar.ExperienceBar;
 import net.minecraft.client.gui.contextualbar.JumpableVehicleBar;
 import net.minecraft.client.gui.contextualbar.LocatorBar;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
+import net.minecraft.client.gui.screens.options.FigBlockSearch;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.Lightmap;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -216,11 +217,15 @@ public class Hud {
    }
 
    public void extractRenderState(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
+      FigBlockSearch.tick(this.minecraft);
       this.minecraft.gameRenderer.gameRenderState().guiRenderState.isHudHidden = this.isHidden;
       if (!(this.minecraft.gui.screen() instanceof LevelLoadingScreen)) {
          if (!this.isHidden) {
             this.extractCameraOverlays(graphics, deltaTracker);
             this.extractCrosshair(graphics, deltaTracker);
+            this.extractFigCompass(graphics);
+            this.extractFigEquipmentHud(graphics);
+            this.extractFigInventoryAlerts(graphics);
             graphics.nextStratum();
             this.extractHotbarAndDecorations(graphics, deltaTracker);
             this.extractEffects(graphics, deltaTracker);
@@ -239,6 +244,94 @@ public class Hud {
          } else if (this.minecraft.gui.screen() != null && this.minecraft.gui.screen().isInGameUi()) {
             this.extractSubtitleOverlay(graphics, true);
          }
+      }
+   }
+
+   private void extractFigCompass(final GuiGraphicsExtractor graphics) {
+      LocalPlayer player = this.minecraft.player;
+      if (!this.minecraft.options.figClientCompass().get() || player == null || this.minecraft.gui.screen() != null) {
+         return;
+      }
+
+      int centerX = graphics.guiWidth() / 2;
+      int centerY = 38;
+      for (int y = -16; y <= 16; y++) {
+         int halfWidth = (int)Math.sqrt(16 * 16 - y * y);
+         graphics.fill(centerX - halfWidth - 2, centerY + y, centerX + halfWidth + 2, centerY + y + 1, 0xB0204560);
+         int innerWidth = (int)Math.sqrt(14 * 14 - y * y);
+         graphics.fill(centerX - innerWidth, centerY + y, centerX + innerWidth, centerY + y + 1, 0xA8102234);
+      }
+
+      net.minecraft.core.Direction facing = net.minecraft.core.Direction.fromYRot(player.getYRot());
+      graphics.centeredText(this.getFont(), "N", centerX, centerY - 13, compassDirectionColor(facing, net.minecraft.core.Direction.NORTH));
+      graphics.centeredText(this.getFont(), "S", centerX, centerY + 5, compassDirectionColor(facing, net.minecraft.core.Direction.SOUTH));
+      graphics.text(this.getFont(), "W", centerX - 12, centerY - 4, compassDirectionColor(facing, net.minecraft.core.Direction.WEST));
+      graphics.text(this.getFont(), "E", centerX + 7, centerY - 4, compassDirectionColor(facing, net.minecraft.core.Direction.EAST));
+
+      String coordinates = player.getBlockX() + " " + player.getBlockY() + " " + player.getBlockZ();
+      graphics.centeredText(this.getFont(), coordinates, centerX, centerY + 21, 0xFFFFFFFF);
+   }
+
+   private static int compassDirectionColor(final net.minecraft.core.Direction facing, final net.minecraft.core.Direction direction) {
+      return facing == direction ? 0xFF7CD8F3 : 0xFFB9D8E8;
+   }
+
+   private void extractFigEquipmentHud(final GuiGraphicsExtractor graphics) {
+      if (!this.minecraft.options.figClientEquipmentHud().get() || this.minecraft.player == null || this.minecraft.gui.screen() != null) {
+         return;
+      }
+
+      int centerX = graphics.guiWidth() / 2;
+      int top = graphics.guiHeight() - 78;
+      int slots = 5;
+      int left = centerX - slots * 10;
+      graphics.fill(left - 3, top - 3, left + slots * 20 + 3, top + 23, 0xB0204560);
+      net.minecraft.world.entity.EquipmentSlot[] equipmentSlots = {
+         net.minecraft.world.entity.EquipmentSlot.HEAD,
+         net.minecraft.world.entity.EquipmentSlot.CHEST,
+         net.minecraft.world.entity.EquipmentSlot.LEGS,
+         net.minecraft.world.entity.EquipmentSlot.FEET
+      };
+      for (int i = 0; i < equipmentSlots.length; i++) {
+         this.renderFigEquipmentSlot(graphics, left + i * 20, top, this.minecraft.player.getItemBySlot(equipmentSlots[i]));
+      }
+      this.renderFigEquipmentSlot(graphics, left + 80, top, this.minecraft.player.getOffhandItem());
+   }
+
+   private void renderFigEquipmentSlot(final GuiGraphicsExtractor graphics, final int x, final int y, final ItemStack stack) {
+      graphics.fill(x, y, x + 20, y + 20, 0xA8102234);
+      if (!stack.isEmpty()) {
+         graphics.item(stack, x + 2, y + 2);
+         graphics.itemDecorations(this.getFont(), stack, x + 2, y + 2);
+         if (stack.isDamageableItem()) {
+            int remaining = stack.getMaxDamage() - stack.getDamageValue();
+            int color = remaining <= stack.getMaxDamage() / 5 ? 0xFFFF6262 : 0xFF7CD8F3;
+            graphics.fill(x + 3, y + 18, x + 17, y + 19, 0xFF202830);
+            graphics.fill(x + 3, y + 18, x + 3 + Math.max(1, remaining * 14 / stack.getMaxDamage()), y + 19, color);
+         }
+      }
+   }
+
+   private void extractFigInventoryAlerts(final GuiGraphicsExtractor graphics) {
+      if (!this.minecraft.options.figClientInventoryAlerts().get() || this.minecraft.player == null || this.minecraft.gui.screen() != null) {
+         return;
+      }
+
+      ItemStack hand = this.minecraft.player.getMainHandItem();
+      boolean lowDurability = hand.isDamageableItem()
+         && hand.getMaxDamage() - hand.getDamageValue() <= Math.max(1, hand.getMaxDamage() / 10);
+      boolean inventoryFull = true;
+      for (int slot = 0; slot < this.minecraft.player.getInventory().getContainerSize(); slot++) {
+         if (this.minecraft.player.getInventory().getItem(slot).isEmpty()) {
+            inventoryFull = false;
+            break;
+         }
+      }
+
+      if (lowDurability) {
+         graphics.centeredText(this.getFont(), "LOW DURABILITY", graphics.guiWidth() / 2, graphics.guiHeight() - 94, 0xFFFF6262);
+      } else if (inventoryFull) {
+         graphics.centeredText(this.getFont(), "INVENTORY FULL", graphics.guiWidth() / 2, graphics.guiHeight() - 94, 0xFF7CD8F3);
       }
    }
 

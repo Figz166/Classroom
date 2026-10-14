@@ -352,6 +352,14 @@ public class TitleScreen extends Screen {
       this.extractPanorama(graphics, a);
       super.extractRenderState(graphics, mouseX, mouseY, a);
       this.logoRenderer.extractRenderState(graphics, this.width, this.logoRenderer.keepLogoThroughFade() ? 1.0F : widgetFade);
+      graphics.centeredText(
+         this.font,
+         Component.literal("WELCOME TO FIG CLIENT").withStyle(net.minecraft.ChatFormatting.AQUA, net.minecraft.ChatFormatting.BOLD),
+         this.width / 2,
+         this.height / 4 + 4,
+         ARGB.white(widgetFade)
+      );
+      graphics.fill(this.width / 2 - 105, this.height / 4 + 21, this.width / 2 + 105, this.height / 4 + 23, 0xFF7CD8F3);
       if (this.splash != null && !this.minecraft.options.hideSplashTexts().get()) {
          this.splash.extractRenderState(graphics, this.width, this.font, widgetFade);
       }
@@ -383,6 +391,12 @@ public class TitleScreen extends Screen {
 
    @Override
    public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float a) {
+   }
+
+   @Override
+   protected void extractPanorama(final GuiGraphicsExtractor graphics, final float a) {
+      super.extractPanorama(graphics, a);
+      graphics.fill(0, 0, this.width, this.height, 0x302B8FC0);
    }
 
    private void confirmDemo(final boolean result) {

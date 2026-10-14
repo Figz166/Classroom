@@ -331,6 +331,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    protected int missTime;
    private ItemStack figClientLastHeldItem = ItemStack.EMPTY;
    private int figClientLastHeldSlot = -1;
+   private int figClientAutoTotemCooldown;
    private volatile boolean pause;
    private long lastNanoTime = Util.getNanos();
    private long lastTime;
@@ -2164,7 +2165,33 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.options.figClientChunkSaver().set(!this.options.figClientChunkSaver().get());
       }
 
+      while (this.options.keyFigFullbright.consumeClick()) {
+         this.options.figClientFullbright().set(!this.options.figClientFullbright().get());
+      }
+      while (this.options.keyFigCompass.consumeClick()) {
+         this.options.figClientCompass().set(!this.options.figClientCompass().get());
+      }
+      while (this.options.keyFigEquipmentHud.consumeClick()) {
+         this.options.figClientEquipmentHud().set(!this.options.figClientEquipmentHud().get());
+      }
+      while (this.options.keyFigInventoryAlerts.consumeClick()) {
+         this.options.figClientInventoryAlerts().set(!this.options.figClientInventoryAlerts().get());
+      }
+      while (this.options.keyFigAutoRefill.consumeClick()) {
+         this.options.figClientAutoRefill().set(!this.options.figClientAutoRefill().get());
+      }
+      while (this.options.keyFigEntityCulling.consumeClick()) {
+         this.options.figClientEntityCulling().set(!this.options.figClientEntityCulling().get());
+      }
+      while (this.options.keyFigXray.consumeClick()) {
+         this.options.figClientXray().set(!this.options.figClientXray().get());
+      }
+      while (this.options.keyFigAutoTotem.consumeClick()) {
+         this.options.figClientAutoTotem().set(!this.options.figClientAutoTotem().get());
+      }
+
       this.tryFigAutoRefill();
+      this.tryFigAutoTotem();
 
       this.gui.handleKeybinds();
 
@@ -2295,6 +2322,35 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                this.player
             );
             break;
+         }
+      }
+   }
+
+   private void tryFigAutoTotem() {
+      if (this.figClientAutoTotemCooldown > 0) {
+         this.figClientAutoTotemCooldown--;
+      }
+      if (this.player == null
+         || this.gameMode == null
+         || !this.options.figClientAutoTotem().get()
+         || this.player.containerMenu != this.player.inventoryMenu
+         || this.player.getHealth() > this.options.figClientAutoTotemHealth().get()
+         || this.figClientAutoTotemCooldown > 0
+         || this.player.getOffhandItem().is(net.minecraft.world.item.Items.TOTEM_OF_UNDYING)) {
+         return;
+      }
+
+      for (int inventorySlot = 9; inventorySlot < 45; inventorySlot++) {
+         if (this.player.inventoryMenu.getSlot(inventorySlot).getItem().is(net.minecraft.world.item.Items.TOTEM_OF_UNDYING)) {
+            this.gameMode.handleContainerInput(
+               this.player.inventoryMenu.containerId,
+               inventorySlot,
+               40,
+               net.minecraft.world.inventory.ContainerInput.SWAP,
+               this.player
+            );
+            this.figClientAutoTotemCooldown = 10;
+            return;
          }
       }
    }

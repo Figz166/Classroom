@@ -24,6 +24,7 @@ import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.Panorama;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.quickplay.QuickPlay;
@@ -40,8 +41,10 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class TitleScreen extends Screen {
+   private static final net.minecraft.resources.Identifier FIG_BACKGROUND =
+      net.minecraft.resources.Identifier.withDefaultNamespace("textures/gui/title/fig_waterfall.png");
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Component TITLE = Component.translatable("narrator.screen.title");
+   private static final Component TITLE = Component.literal("Fig Client");
    private static final Component COPYRIGHT_TEXT = Component.translatable("title.credits");
    private static final String DEMO_LEVEL_ID = "Demo_World";
    private @Nullable SplashRenderer splash;
@@ -68,6 +71,7 @@ public class TitleScreen extends Screen {
       textureManager.registerForNextReload(LogoRenderer.MINECRAFT_LOGO);
       textureManager.registerForNextReload(LogoRenderer.MINECRAFT_EDITION);
       textureManager.registerForNextReload(Panorama.PANORAMA_OVERLAY);
+      textureManager.registerForNextReload(FIG_BACKGROUND);
    }
 
    @Override
@@ -349,17 +353,18 @@ public class TitleScreen extends Screen {
          this.fadeWidgets(widgetFade);
       }
 
-      this.extractPanorama(graphics, a);
+      graphics.blit(RenderPipelines.GUI_TEXTURED, FIG_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.height, 960, 540);
+      graphics.fillGradient(0, this.height / 3, this.width, this.height, 0x00000000, 0xB0183442);
+      int menuTop = this.height / 4 + 48;
+      graphics.fill(this.width / 2 - 112, menuTop - 8, this.width / 2 + 112, menuTop + 112, 0x86203F50);
+      graphics.fill(this.width / 2 - 112, menuTop - 8, this.width / 2 + 112, menuTop - 6, 0xFF7CD8F3);
       super.extractRenderState(graphics, mouseX, mouseY, a);
-      this.logoRenderer.extractRenderState(graphics, this.width, this.logoRenderer.keepLogoThroughFade() ? 1.0F : widgetFade);
-      graphics.centeredText(
-         this.font,
-         Component.literal("WELCOME TO FIG CLIENT").withStyle(net.minecraft.ChatFormatting.AQUA, net.minecraft.ChatFormatting.BOLD),
-         this.width / 2,
-         this.height / 4 + 4,
-         ARGB.white(widgetFade)
-      );
-      graphics.fill(this.width / 2 - 105, this.height / 4 + 21, this.width / 2 + 105, this.height / 4 + 23, 0xFF7CD8F3);
+      graphics.pose().pushMatrix();
+      graphics.pose().translate(this.width / 2.0F, this.height / 4.0F + 15.0F);
+      graphics.pose().scale(3.0F, 3.0F);
+      graphics.centeredText(this.font, Component.literal("FIG CLIENT").withStyle(net.minecraft.ChatFormatting.AQUA, net.minecraft.ChatFormatting.BOLD),
+         0, 0, ARGB.white(widgetFade));
+      graphics.pose().popMatrix();
       if (this.splash != null && !this.minecraft.options.hideSplashTexts().get()) {
          this.splash.extractRenderState(graphics, this.width, this.font, widgetFade);
       }

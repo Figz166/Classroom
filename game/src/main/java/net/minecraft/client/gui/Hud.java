@@ -253,8 +253,8 @@ public class Hud {
          return;
       }
 
-      int centerX = graphics.guiWidth() / 2;
-      int centerY = 38;
+      int centerX = graphics.guiWidth() / 2 + this.minecraft.options.figClientCompassX().get();
+      int centerY = 38 + this.minecraft.options.figClientCompassY().get();
       for (int y = -16; y <= 16; y++) {
          int halfWidth = (int)Math.sqrt(16 * 16 - y * y);
          graphics.fill(centerX - halfWidth - 2, centerY + y, centerX + halfWidth + 2, centerY + y + 1, 0xB0204560);
@@ -262,18 +262,21 @@ public class Hud {
          graphics.fill(centerX - innerWidth, centerY + y, centerX + innerWidth, centerY + y + 1, 0xA8102234);
       }
 
-      net.minecraft.core.Direction facing = net.minecraft.core.Direction.fromYRot(player.getYRot());
-      graphics.centeredText(this.getFont(), "N", centerX, centerY - 13, compassDirectionColor(facing, net.minecraft.core.Direction.NORTH));
-      graphics.centeredText(this.getFont(), "S", centerX, centerY + 5, compassDirectionColor(facing, net.minecraft.core.Direction.SOUTH));
-      graphics.text(this.getFont(), "W", centerX - 12, centerY - 4, compassDirectionColor(facing, net.minecraft.core.Direction.WEST));
-      graphics.text(this.getFont(), "E", centerX + 7, centerY - 4, compassDirectionColor(facing, net.minecraft.core.Direction.EAST));
+      double yaw = Math.toRadians(player.getYRot());
+      float sin = (float)Math.sin(yaw);
+      float cos = (float)Math.cos(yaw);
+      drawCompassDirection(graphics, "N", centerX + Math.round(14 * sin), centerY + Math.round(14 * cos), 0xFF7CD8F3);
+      drawCompassDirection(graphics, "S", centerX - Math.round(14 * sin), centerY - Math.round(14 * cos), 0xFFB9D8E8);
+      drawCompassDirection(graphics, "E", centerX - Math.round(14 * cos), centerY + Math.round(14 * sin), 0xFFB9D8E8);
+      drawCompassDirection(graphics, "W", centerX + Math.round(14 * cos), centerY - Math.round(14 * sin), 0xFFB9D8E8);
 
-      String coordinates = player.getBlockX() + " " + player.getBlockY() + " " + player.getBlockZ();
+      BlockPos blockPos = BlockPos.containing(player.getX(), player.getY(), player.getZ());
+      String coordinates = blockPos.getX() + " " + blockPos.getY() + " " + blockPos.getZ();
       graphics.centeredText(this.getFont(), coordinates, centerX, centerY + 21, 0xFFFFFFFF);
    }
 
-   private static int compassDirectionColor(final net.minecraft.core.Direction facing, final net.minecraft.core.Direction direction) {
-      return facing == direction ? 0xFF7CD8F3 : 0xFFB9D8E8;
+   private void drawCompassDirection(final GuiGraphicsExtractor graphics, final String direction, final int x, final int y, final int color) {
+      graphics.centeredText(this.getFont(), direction, x, y - 4, color);
    }
 
    private void extractFigEquipmentHud(final GuiGraphicsExtractor graphics) {
@@ -281,8 +284,8 @@ public class Hud {
          return;
       }
 
-      int centerX = graphics.guiWidth() / 2;
-      int top = graphics.guiHeight() - 78;
+      int centerX = graphics.guiWidth() / 2 + this.minecraft.options.figClientEquipmentHudX().get();
+      int top = graphics.guiHeight() - 78 + this.minecraft.options.figClientEquipmentHudY().get();
       int slots = 5;
       int left = centerX - slots * 10;
       graphics.fill(left - 3, top - 3, left + slots * 20 + 3, top + 23, 0xB0204560);
@@ -659,23 +662,24 @@ public class Hud {
       if (player != null) {
          ItemStack offhand = player.getOffhandItem();
          HumanoidArm offhandArm = player.getMainArm().getOpposite();
-         int screenCenter = graphics.guiWidth() / 2;
+         int screenCenter = graphics.guiWidth() / 2 + this.minecraft.options.figClientHotbarX().get();
+         int hotbarTop = graphics.guiHeight() - 22 + this.minecraft.options.figClientHotbarY().get();
          int hotbarWidth = 182;
          int halfHotbar = 91;
-         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SPRITE, screenCenter - 91, graphics.guiHeight() - 22, 182, 22);
+         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_SPRITE, screenCenter - halfHotbar, hotbarTop, hotbarWidth, 22);
          graphics.blitSprite(
             RenderPipelines.GUI_TEXTURED,
             HOTBAR_SELECTION_SPRITE,
             screenCenter - 91 - 1 + player.getInventory().getSelectedSlot() * 20,
-            graphics.guiHeight() - 22 - 1,
+            hotbarTop - 1,
             24,
             23
          );
          if (!offhand.isEmpty()) {
             if (offhandArm == HumanoidArm.LEFT) {
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_OFFHAND_LEFT_SPRITE, screenCenter - 91 - 29, graphics.guiHeight() - 23, 29, 24);
+               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_OFFHAND_LEFT_SPRITE, screenCenter - 91 - 29, hotbarTop - 1, 29, 24);
             } else {
-               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_OFFHAND_RIGHT_SPRITE, screenCenter + 91, graphics.guiHeight() - 23, 29, 24);
+               graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HOTBAR_OFFHAND_RIGHT_SPRITE, screenCenter + 91, hotbarTop - 1, 29, 24);
             }
          }
 
@@ -683,12 +687,12 @@ public class Hud {
 
          for (int i = 0; i < 9; i++) {
             int x = screenCenter - 90 + i * 20 + 2;
-            int y = graphics.guiHeight() - 16 - 3;
+            int y = hotbarTop + 3;
             this.extractSlot(graphics, x, y, deltaTracker, player, player.getInventory().getItem(i), seed++);
          }
 
          if (!offhand.isEmpty()) {
-            int y = graphics.guiHeight() - 16 - 3;
+            int y = hotbarTop + 3;
             if (offhandArm == HumanoidArm.LEFT) {
                this.extractSlot(graphics, screenCenter - 91 - 26, y, deltaTracker, player, offhand, seed++);
             } else {
@@ -699,7 +703,7 @@ public class Hud {
          if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
             float attackStrengthScale = this.minecraft.player.getAttackStrengthScale(0.0F);
             if (attackStrengthScale < 1.0F) {
-               int y = graphics.guiHeight() - 20;
+               int y = hotbarTop + 2;
                int x = screenCenter + 91 + 6;
                if (offhandArm == HumanoidArm.RIGHT) {
                   x = screenCenter - 91 - 22;

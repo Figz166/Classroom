@@ -36,6 +36,24 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Restore verified WasmGC build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            game/build
+            platform/build
+            platform-teavm/build
+            teavm-compat/build
+            target_lwjgl_desktop/build/epk
+            target_teavm/build
+            target_teavm_wasm_gc/build
+            target_teavm_wasm_gc_mesh/build
+            target_teavm_wasm_gc_server/build
+            wasm-toolchain/generated
+          key: fig-pages-${{ runner.os }}-${{ github.ref_name }}-${{ hashFiles('**/src/**', '**/*.gradle.kts', '**/*.properties', 'gradle/**', 'wasm-toolchain/**/*.js', 'wasm-toolchain/**/*.java', 'wasm-toolchain/**/*.sh', 'package-lock.json') }}
+          restore-keys: |
+            fig-pages-${{ runner.os }}-${{ github.ref_name }}-
+
       - name: Install web packaging dependency
         run: npm ci
 

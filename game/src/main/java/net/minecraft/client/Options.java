@@ -127,6 +127,12 @@ public class Options {
    private final OptionInstance<Boolean> figClientInventoryAlerts = OptionInstance.createBoolean(
       "figClientInventoryAlerts", OptionInstance.noTooltip(), false
    );
+   private final OptionInstance<Boolean> figClientFoodInfo = OptionInstance.createBoolean(
+      "figClientFoodInfo", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientInventorySort = OptionInstance.createBoolean(
+      "figClientInventorySort", OptionInstance.noTooltip(), true
+   );
    private final OptionInstance<String> figClientBlockSearch = new OptionInstance<>(
       "figClientBlockSearch",
       OptionInstance.noTooltip(),
@@ -1191,6 +1197,14 @@ public class Options {
       return this.figClientInventoryAlerts;
    }
 
+   public OptionInstance<Boolean> figClientFoodInfo() {
+      return this.figClientFoodInfo;
+   }
+
+   public OptionInstance<Boolean> figClientInventorySort() {
+      return this.figClientInventorySort;
+   }
+
    public OptionInstance<String> figClientBlockSearch() {
       return this.figClientBlockSearch;
    }
@@ -1792,6 +1806,8 @@ public class Options {
       access.process("figClientHotbarX", this.figClientHotbarX);
       access.process("figClientHotbarY", this.figClientHotbarY);
       access.process("figClientInventoryAlerts", this.figClientInventoryAlerts);
+      access.process("figClientFoodInfo", this.figClientFoodInfo);
+      access.process("figClientInventorySort", this.figClientInventorySort);
       access.process("figClientBlockSearch", this.figClientBlockSearch);
       access.process("figClientLatestDeath", this.figClientLatestDeath);
       access.process("figClientPreviousDeath", this.figClientPreviousDeath);

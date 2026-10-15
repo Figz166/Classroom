@@ -1085,6 +1085,17 @@ public class Hud {
             graphics.blitSprite(RenderPipelines.GUI_TEXTURED, half, xo, yo, 9, 9);
          }
       }
+
+      if (Minecraft.getInstance().options.figClientFoodInfo().get()) {
+         int saturation = (int)Math.ceil(foodData.getSaturationLevel());
+         for (int i = 0; i < 10; i++) {
+            int iconSaturation = Math.min(2, saturation - i * 2);
+            if (iconSaturation > 0) {
+               int xo = xRight - i * 8 - 9;
+               graphics.fill(xo, yLineBase - 3, xo + (iconSaturation == 2 ? 9 : 4), yLineBase - 1, 0xFFFFD45A);
+            }
+         }
+      }
    }
 
    private void extractVehicleHealth(final GuiGraphicsExtractor graphics) {

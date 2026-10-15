@@ -55,7 +55,9 @@ public class FigModulesScreen extends Screen {
       this.modules.add(new ModuleEntry("Compass and Coordinates", Category.VISUALS, options.figClientCompass()));
       this.modules.add(new ModuleEntry("Equipment HUD", Category.VISUALS, options.figClientEquipmentHud()));
       this.modules.add(new ModuleEntry("Inventory Alerts", Category.QOL, options.figClientInventoryAlerts()));
+      this.modules.add(new ModuleEntry("Food Info", Category.QOL, options.figClientFoodInfo()));
       this.modules.add(new ModuleEntry("Auto Refill (Singleplayer)", Category.QOL, options.figClientAutoRefill()));
+      this.modules.add(new ModuleEntry("Inventory Sort", Category.TOOLS, options.figClientInventorySort()));
       this.modules.add(new ModuleEntry("Auto Totem", Category.COMBAT, options.figClientAutoTotem()));
       this.modules.add(new ModuleEntry("Chunk Saver", Category.WORLD, options.figClientChunkSaver()));
       this.modules.add(new ModuleEntry("Entity Culling", Category.WORLD, options.figClientEntityCulling()));

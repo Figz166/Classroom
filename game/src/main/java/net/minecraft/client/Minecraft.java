@@ -332,6 +332,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private ItemStack figClientLastHeldItem = ItemStack.EMPTY;
    private int figClientLastHeldSlot = -1;
    private int figClientAutoTotemCooldown;
+   private @Nullable FigFreecamEntity figFreecamCamera;
+   private boolean figFreecamPreviousNoGravity;
    private volatile boolean pause;
    private long lastNanoTime = Util.getNanos();
    private long lastTime;
@@ -1899,10 +1901,17 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                   return;
                }
 
-               if (this.hitResult != null) {
-                  switch (this.hitResult.getType()) {
+               HitResult interactionHit = this.hitResult;
+               if (interactionHit != null && interactionHit.getType() == HitResult.Type.MISS
+                   && this.options.figClientAirPlace().get()
+                   && heldItem.getItem() instanceof net.minecraft.world.item.BlockItem) {
+                  interactionHit = this.createFigAirPlaceHit();
+               }
+
+               if (interactionHit != null) {
+                  switch (interactionHit.getType()) {
                      case ENTITY:
-                        EntityHitResult entityHit = (EntityHitResult)this.hitResult;
+                        EntityHitResult entityHit = (EntityHitResult)interactionHit;
                         Entity entity = entityHit.getEntity();
                         if (!this.level.getWorldBorder().isWithinBounds(entity.blockPosition())) {
                            return;
@@ -1918,7 +1927,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                         }
                         break;
                      case BLOCK:
-                        BlockHitResult blockHit = (BlockHitResult)this.hitResult;
+                        BlockHitResult blockHit = (BlockHitResult)interactionHit;
                         net.lax1dude.eaglercraft.v1_8.minecraft.EaglerClientPerf.actionInput(
                            net.lax1dude.eaglercraft.v1_8.minecraft.EaglerClientPerf.ACTION_USE_BLOCK,
                            -1, "pos=" + blockHit.getBlockPos().getX() + "," + blockHit.getBlockPos().getY()
@@ -1954,6 +1963,20 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }
          }
       }
+   }
+
+   private @Nullable BlockHitResult createFigAirPlaceHit() {
+      if (this.player == null || this.level == null) {
+         return null;
+      }
+      net.minecraft.world.phys.Vec3 eye = this.player.getEyePosition();
+      double reach = Math.max(0.0, this.player.blockInteractionRange() - 0.1);
+      net.minecraft.world.phys.Vec3 target = eye.add(this.player.getViewVector(1.0F).scale(reach));
+      net.minecraft.core.BlockPos desiredPosition = net.minecraft.core.BlockPos.containing(target);
+      if (this.level.isOutsideBuildHeight(desiredPosition) || !this.level.getWorldBorder().isWithinBounds(desiredPosition)) {
+         return null;
+      }
+      return new BlockHitResult(target, net.minecraft.core.Direction.UP, desiredPosition.below(), false);
    }
 
    public MusicManager getMusicManager() {
@@ -2189,6 +2212,45 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       while (this.options.keyFigAutoTotem.consumeClick()) {
          this.options.figClientAutoTotem().set(!this.options.figClientAutoTotem().get());
       }
+      while (this.options.keyFigFoodInfo.consumeClick()) {
+         this.options.figClientFoodInfo().set(!this.options.figClientFoodInfo().get());
+      }
+      while (this.options.keyFigInventorySort.consumeClick()) {
+         this.options.figClientInventorySort().set(!this.options.figClientInventorySort().get());
+      }
+      while (this.options.keyFigEntityEsp.consumeClick()) {
+         this.options.figClientEntityEsp().set(!this.options.figClientEntityEsp().get());
+      }
+      while (this.options.keyFigTracers.consumeClick()) {
+         this.options.figClientEspTracers().set(!this.options.figClientEspTracers().get());
+      }
+      while (this.options.keyFigChestEsp.consumeClick()) {
+         this.options.figClientChestEsp().set(!this.options.figClientChestEsp().get());
+      }
+      while (this.options.keyFigCityEsp.consumeClick()) {
+         this.options.figClientCityEsp().set(!this.options.figClientCityEsp().get());
+      }
+      while (this.options.keyFigFlight.consumeClick()) {
+         this.options.figClientFlight().set(!this.options.figClientFlight().get());
+         this.setFigFlightEnabled(this.options.figClientFlight().get());
+      }
+      while (this.options.keyFigAirPlace.consumeClick()) {
+         this.options.figClientAirPlace().set(!this.options.figClientAirPlace().get());
+         this.options.save();
+      }
+      while (this.options.keyFigFreecam.consumeClick()) {
+         this.options.figClientFreecam().set(!this.options.figClientFreecam().get());
+         this.setFigFreecamEnabled(this.options.figClientFreecam().get());
+      }
+
+      if (this.figFreecamCamera != null) {
+         if (this.player == null || this.level == null || !this.options.figClientFreecam().get()) {
+            this.options.figClientFreecam().set(false);
+            this.setFigFreecamEnabled(false);
+         } else {
+            this.figFreecamCamera.moveFromKeys(this.options);
+         }
+      }
 
       this.tryFigAutoRefill();
       this.tryFigAutoTotem();
@@ -2280,6 +2342,33 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.continueAttack(this.gui.screen() == null && !instantAttack && this.options.keyAttack.isDown()
          && (this.mouseHandler.isMouseGrabbed()
             || net.lax1dude.eaglercraft.v1_8.touch_gui.TouchControls26.isEnabled()));
+   }
+
+   public void setFigFlightEnabled(final boolean enabled) {
+      this.options.figClientFlight().set(enabled);
+      if (this.player == null) {
+         return;
+      }
+      this.player.getAbilities().mayfly = enabled || this.player.getAbilities().instabuild || this.player.isSpectator();
+      this.player.getAbilities().flying = enabled && !this.player.isSpectator();
+      this.player.onUpdateAbilities();
+   }
+
+   public void setFigFreecamEnabled(final boolean enabled) {
+      this.options.figClientFreecam().set(enabled);
+      if (enabled && this.player != null && this.level != null) {
+         this.figFreecamPreviousNoGravity = this.player.isNoGravity();
+         this.player.setNoGravity(true);
+         this.player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+         this.figFreecamCamera = new FigFreecamEntity(this.level, this.player);
+         this.setCameraEntity(this.figFreecamCamera);
+      } else {
+         if (this.player != null && this.figFreecamCamera != null) {
+            this.player.setNoGravity(this.figFreecamPreviousNoGravity);
+         }
+         this.figFreecamCamera = null;
+         this.setCameraEntity(this.player);
+      }
    }
 
    private void tryFigAutoRefill() {

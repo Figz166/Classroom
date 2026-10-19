@@ -796,6 +796,10 @@ public class LocalPlayer extends AbstractClientPlayer {
          && this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING)
          && (this.isShiftKeyDown() || !this.isSleeping() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.STANDING));
       this.input.tick();
+      if (this.minecraft.options.figClientFreecam().get()) {
+         this.input.clear();
+         this.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+      }
       this.minecraft.getTutorial().onInput(this.input);
       boolean wasAutoJump = false;
       if (this.autoJumpTime > 0) {

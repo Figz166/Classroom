@@ -14,6 +14,11 @@ public class ClientInput {
       return this.moveVector;
    }
 
+   public void clear() {
+      this.keyPresses = Input.EMPTY;
+      this.moveVector = Vec2.ZERO;
+   }
+
    public boolean hasForwardImpulse() {
       return this.moveVector.y > 1.0E-5F;
    }

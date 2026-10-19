@@ -573,6 +573,12 @@ public class RenderPipelines {
          .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
          .build()
    );
+   public static final RenderPipeline FIG_ESP_LINES = register(
+      RenderPipeline.builder(LINES_SNIPPET)
+         .withLocation("pipeline/fig_esp_lines")
+         .withDepthStencilState(Optional.empty())
+         .build()
+   );
    public static final RenderPipeline LINES_DEPTH_BIAS = register(
       RenderPipeline.builder(LINES_SNIPPET)
          .withLocation("pipeline/lines_depth_bias")

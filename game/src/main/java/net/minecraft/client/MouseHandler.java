@@ -4,6 +4,7 @@ import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.logging.LogUtils;
+import net.minecraft.world.entity.Entity;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -456,7 +457,10 @@ public class MouseHandler {
 
       this.minecraft.getTutorial().onMouse(xo, yo);
       if (this.minecraft.player != null) {
-         this.minecraft.player.turn(this.minecraft.options.invertMouseX().get() ? -xo : xo, this.minecraft.options.invertMouseY().get() ? -yo : yo);
+         Entity cameraEntity = this.minecraft.options.figClientFreecam().get() ? this.minecraft.getCameraEntity() : this.minecraft.player;
+         if (cameraEntity != null) {
+            cameraEntity.turn(this.minecraft.options.invertMouseX().get() ? -xo : xo, this.minecraft.options.invertMouseY().get() ? -yo : yo);
+         }
       }
    }
 

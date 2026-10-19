@@ -69,6 +69,9 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.model.sprite.AtlasManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.core.SectionPos;
 import net.minecraft.gizmos.Gizmos;
 import net.minecraft.gizmos.SimpleGizmoCollector;
@@ -347,6 +350,7 @@ public class LevelRenderer implements AutoCloseable {
       this.submitEntities(poseStack, levelRenderState, submitNodeCollector);
       levelRenderState.entityRenderStates.clear();
       this.submitBlockEntities(poseStack, levelRenderState, submitNodeCollector);
+      this.submitFigChestEsp(poseStack, submitNodeCollector, levelRenderState);
       levelRenderState.blockEntityRenderStates.clear();
       this.submitBlockDestroyAnimation(poseStack, submitNodeCollector, levelRenderState);
       levelRenderState.blockBreakingRenderStates.clear();
@@ -744,10 +748,105 @@ public class LevelRenderer implements AutoCloseable {
       double camX = cameraPos.x();
       double camY = cameraPos.y();
       double camZ = cameraPos.z();
+      Options options = Minecraft.getInstance().options;
+      boolean entityEsp = options.figClientEntityEsp().get();
 
       for (EntityRenderState state : levelRenderState.entityRenderStates) {
+         int espColor = entityEsp ? this.figEntityEspColor(options, state) : 0;
+         if (espColor != 0) {
+            state.outlineColor = espColor;
+         }
          this.entityRenderDispatcher.submit(state, levelRenderState.cameraRenderState, state.x - camX, state.y - camY, state.z - camZ, poseStack, output);
       }
+   }
+
+   private int figEntityEspColor(final Options options, final EntityRenderState state) {
+      EntityType<?> type = state.entityType;
+      if (type == null) {
+         return 0;
+      }
+      if (type == EntityTypes.PLAYER) {
+         return options.figClientEspPlayers().get()
+            ? net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientEspPlayerColor().get()) : 0;
+      }
+      MobCategory category = type.getCategory();
+      if (category == MobCategory.MONSTER) {
+         return options.figClientEspMobs().get()
+            ? net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientEspMobColor().get()) : 0;
+      }
+      if (category == MobCategory.CREATURE || category == MobCategory.AMBIENT || category == MobCategory.AXOLOTLS
+          || category == MobCategory.UNDERGROUND_WATER_CREATURE || category == MobCategory.WATER_CREATURE
+          || category == MobCategory.WATER_AMBIENT) {
+         return options.figClientEspAnimals().get()
+            ? net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientEspAnimalColor().get()) : 0;
+      }
+      return options.figClientEspOther().get()
+         ? net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientEspOtherColor().get()) : 0;
+   }
+
+   private void submitFigChestEsp(final PoseStack poseStack, final SubmitNodeCollector output, final LevelRenderState levelRenderState) {
+      Options options = Minecraft.getInstance().options;
+      if (!options.figClientChestEsp().get()) {
+         return;
+      }
+      int color = net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientChestEspColor().get());
+      Vec3 cameraPos = levelRenderState.cameraRenderState.pos;
+      for (BlockEntityRenderState state : levelRenderState.blockEntityRenderStates) {
+         boolean selected = state.blockEntityType == net.minecraft.world.level.block.entity.BlockEntityTypes.CHEST
+            && options.figClientEspNormalChests().get()
+            || state.blockEntityType == net.minecraft.world.level.block.entity.BlockEntityTypes.TRAPPED_CHEST
+               && options.figClientEspTrappedChests().get()
+            || state.blockEntityType == net.minecraft.world.level.block.entity.BlockEntityTypes.ENDER_CHEST
+               && options.figClientEspEnderChests().get()
+            || state.blockEntityType == net.minecraft.world.level.block.entity.BlockEntityTypes.BARREL
+               && options.figClientEspBarrels().get()
+            || state.blockEntityType == net.minecraft.world.level.block.entity.BlockEntityTypes.SHULKER_BOX
+               && options.figClientEspShulkers().get();
+         if (!selected) {
+            continue;
+         }
+         BlockPos pos = state.blockPos;
+         poseStack.pushPose();
+         poseStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
+         output.submitCustomGeometry(poseStack, RenderTypes.figEspLines(), (pose, vertices) -> {
+            this.submitFigEspBoxEdges(vertices, pose, color);
+         });
+         poseStack.popPose();
+      }
+   }
+
+   private void submitFigEspBoxEdges(final com.mojang.blaze3d.vertex.VertexConsumer vertices, final PoseStack.Pose pose, final int color) {
+      float min = 0.03125F;
+      float max = 0.96875F;
+      float top = 0.875F;
+      this.submitFigEspLine(vertices, pose, min, 0.0F, min, max, 0.0F, min, color);
+      this.submitFigEspLine(vertices, pose, max, 0.0F, min, max, 0.0F, max, color);
+      this.submitFigEspLine(vertices, pose, max, 0.0F, max, min, 0.0F, max, color);
+      this.submitFigEspLine(vertices, pose, min, 0.0F, max, min, 0.0F, min, color);
+      this.submitFigEspLine(vertices, pose, min, top, min, max, top, min, color);
+      this.submitFigEspLine(vertices, pose, max, top, min, max, top, max, color);
+      this.submitFigEspLine(vertices, pose, max, top, max, min, top, max, color);
+      this.submitFigEspLine(vertices, pose, min, top, max, min, top, min, color);
+      this.submitFigEspLine(vertices, pose, min, 0.0F, min, min, top, min, color);
+      this.submitFigEspLine(vertices, pose, max, 0.0F, min, max, top, min, color);
+      this.submitFigEspLine(vertices, pose, max, 0.0F, max, max, top, max, color);
+      this.submitFigEspLine(vertices, pose, min, 0.0F, max, min, top, max, color);
+   }
+
+   private void submitFigEspLine(final com.mojang.blaze3d.vertex.VertexConsumer vertices, final PoseStack.Pose pose,
+                                 final float x1, final float y1, final float z1,
+                                 final float x2, final float y2, final float z2, final int color) {
+      float nx = x2 - x1;
+      float ny = y2 - y1;
+      float nz = z2 - z1;
+      float length = (float)Math.sqrt(nx * nx + ny * ny + nz * nz);
+      if (length > 0.0F) {
+         nx /= length;
+         ny /= length;
+         nz /= length;
+      }
+      vertices.addVertex(pose, x1, y1, z1).setColor(color).setNormal(pose, nx, ny, nz).setLineWidth(2.0F);
+      vertices.addVertex(pose, x2, y2, z2).setColor(color).setNormal(pose, nx, ny, nz).setLineWidth(2.0F);
    }
 
    private void submitBlockEntities(final PoseStack poseStack, final LevelRenderState levelRenderState, final SubmitNodeCollector submitNodeCollector) {

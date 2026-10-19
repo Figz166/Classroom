@@ -5,9 +5,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
 	<title>Eaglercraft 26.2 u1</title>
 	<link rel="icon" type="image/png" href="favicon.png" />
-		<link rel="preload" href="classes.wasm?v=local-fast" as="fetch" type="application/wasm" crossorigin="anonymous" />
-		<link rel="preload" href="mesh-worker.wasm?v=local-fast" as="fetch" type="application/wasm" crossorigin="anonymous" />
-	<link rel="preload" href="assets.epk?v=local-fast" as="fetch" crossorigin="anonymous" />
+		<link rel="preload" href="classes.wasm?v=local-fast-compact-gui-20261019" as="fetch" type="application/wasm" crossorigin="anonymous" />
+		<link rel="preload" href="mesh-worker.wasm?v=local-fast-compact-gui-20261019" as="fetch" type="application/wasm" crossorigin="anonymous" />
+	<link rel="preload" href="assets.epk?v=local-fast-compact-gui-20261019" as="fetch" crossorigin="anonymous" />
 	<style>
 		#loading_screen {
 			transition: opacity 180ms linear;
@@ -152,7 +152,7 @@
 				window.__eaglerRecoveredCrash = previousReport;
 				var journal = {
 					version: 2,
-					build: "local-fast",
+					build: "local-fast-compact-gui-20261019",
 					sessionId: Date.now().toString(36) + "-" + Math.random().toString(36).slice(2),
 					startedAt: Date.now(),
 					heartbeat: Date.now(),
@@ -403,7 +403,7 @@
 		window.eaglercraftXOpts = {
 			container: "game_frame",
 			assetsURI: [
-				{ url: "assets.epk?v=local-fast", path: "" },
+				{ url: "assets.epk?v=local-fast-compact-gui-20261019", path: "" },
 			],
 			localesURI: "lang/",
 			worldsDB: "worlds",
@@ -455,8 +455,8 @@
 			};
 		})();
 	</script>
-	<script type="text/javascript" src="classes.wasm-runtime.js?v=local-fast"></script>
-	<script type="text/javascript" src="worker-bootstrap.js?v=local-fast"></script>
+	<script type="text/javascript" src="classes.wasm-runtime.js?v=local-fast-compact-gui-20261019"></script>
+	<script type="text/javascript" src="worker-bootstrap.js?v=local-fast-compact-gui-20261019"></script>
 	<script type="module">
 		(async () => {
 			try {
@@ -468,19 +468,19 @@
 					}
 					let module;
 					const meshModulePromise = WebAssembly.compileStreaming(
-							fetch("mesh-worker.wasm?v=local-fast"), { builtins: ["js-string"] }
+							fetch("mesh-worker.wasm?v=local-fast-compact-gui-20261019"), { builtins: ["js-string"] }
 						).catch(async (meshStreamErr) => {
 							window.__log.push("W:[shell] mesh compileStreaming failed (" + meshStreamErr + "), falling back to byte fetch");
-							const meshResp = await fetch("mesh-worker.wasm?v=local-fast");
+							const meshResp = await fetch("mesh-worker.wasm?v=local-fast-compact-gui-20261019");
 							return WebAssembly.compile(await meshResp.arrayBuffer(), { builtins: ["js-string"] });
 						});
 					const serverModulePromise = Promise.resolve(null);
 					try {
-						module = await WebAssembly.compileStreaming(fetch("classes.wasm?v=local-fast"), { builtins: ["js-string"] });
+						module = await WebAssembly.compileStreaming(fetch("classes.wasm?v=local-fast-compact-gui-20261019"), { builtins: ["js-string"] });
 						window.__log.push("L:[shell] wasm compileStreaming path OK");
 					} catch (streamErr) {
 						window.__log.push("L:[shell] compileStreaming failed (" + streamErr + "), falling back to byte fetch");
-						const resp = await fetch("classes.wasm?v=local-fast");
+						const resp = await fetch("classes.wasm?v=local-fast-compact-gui-20261019");
 						const bytes = await resp.arrayBuffer();
 						window.__log.push("L:[shell] fetched classes.wasm " + bytes.byteLength + " bytes");
 						module = await WebAssembly.compile(bytes, { builtins: ["js-string"] });
@@ -494,8 +494,8 @@
 					window.__log.push(false
 						? "L:[shell] dedicated mesh + server Wasm compiled"
 						: "L:[shell] dedicated mesh Wasm + shared full-image server module compiled");
-					window.__eaglerWasmRuntimeURL = new URL("classes.wasm-runtime.js?v=local-fast", location.href).href;
-					window.__eaglerWasmWorkerBootstrapURL = new URL("worker-bootstrap.js?v=local-fast", location.href).href;
+					window.__eaglerWasmRuntimeURL = new URL("classes.wasm-runtime.js?v=local-fast-compact-gui-20261019", location.href).href;
+					window.__eaglerWasmWorkerBootstrapURL = new URL("worker-bootstrap.js?v=local-fast-compact-gui-20261019", location.href).href;
 					if (typeof window.__eaglerWasmServerWorkerBootstrapURL !== "string") {
 						window.__eaglerWasmServerWorkerBootstrapURL = window.__eaglerWasmWorkerBootstrapURL;
 					}
@@ -506,7 +506,7 @@
 					window.__eaglerWasmModule = null;
 					window.__eaglerMeshWasmModule = null;
 					window.__eaglerServerWasmModule = null;
-					tv = await TeaVM.wasmGC.load("classes.wasm?v=local-fast", { installImports(i) {} });
+					tv = await TeaVM.wasmGC.load("classes.wasm?v=local-fast-compact-gui-20261019", { installImports(i) {} });
 					window.__log.push("L:[shell] wasm compileStreaming path OK");
 				}
 				window.__loaded = true;

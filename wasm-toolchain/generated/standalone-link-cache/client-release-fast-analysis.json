@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "key": "71ed09b4244bf4c5a5ece127540bd41fa7521392a9b85cd22f18995eb1dc8949",
+  "key": "c3f02a9ab0db6e58d11e18903c4abcf341b0864694494f1d68d9426bf56634d9",
   "inputs": {
     "metadata": {
       "classpathFile": "/workspaces/Classroom/wasm-toolchain/generated/client-program.classpath",
@@ -30,7 +30,7 @@
       },
       "fastDependencyAnalysis": true,
       "linkerClasses": "/workspaces/Classroom/wasm-toolchain/generated/standalone-linker",
-      "linkerHeapMiB": 8192,
+      "linkerHeapMiB": 12288,
       "operation": "fast-analysis-link",
       "outputDirectory": "/workspaces/Classroom/target_teavm_wasm_gc/build/generated/teavm/wasm-gc-standalone-fast-analysis",
       "requestedOptimization": "FULL",
@@ -229,8 +229,8 @@
           "path": "/workspaces/Classroom/game/build/libs/game.jar",
           "resolved": "/workspaces/Classroom/game/build/libs/game.jar",
           "kind": "file",
-          "bytes": "49967373",
-          "sha256": "eb09ffddd80818b556938db9e2069585b943d887725ffcf5bad0316e0fef9b08"
+          "bytes": "49977245",
+          "sha256": "a20f9212f5128015e0b494d59959465d37ce47cbb8e06c694c1ba2e23781c849"
         },
         {
           "path": "/workspaces/Classroom/platform/build/libs/platform.jar",
@@ -1593,8 +1593,8 @@
           "path": "/workspaces/Classroom/target_teavm_wasm_gc/build/generated/teavm/wasm-gc-standalone-fast-analysis/classes.wasm",
           "resolved": "/workspaces/Classroom/target_teavm_wasm_gc/build/generated/teavm/wasm-gc-standalone-fast-analysis/classes.wasm",
           "kind": "file",
-          "bytes": "93671554",
-          "sha256": "a1bc27b77ebf4596f05342c452ffb09a48c67bbf1ec8b102bce080ba900a3a80"
+          "bytes": "93736976",
+          "sha256": "e34a5d5492be24bea5ce663d112b2a24fc9d3468fade5a5e5503a7b1ea078ffe"
         }
       ]
     }

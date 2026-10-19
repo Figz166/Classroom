@@ -169,6 +169,78 @@ public class Options {
    private final OptionInstance<Boolean> figClientAutoTotem = OptionInstance.createBoolean(
       "figClientAutoTotem", OptionInstance.noTooltip(), false
    );
+   private final OptionInstance<Boolean> figClientEntityEsp = OptionInstance.createBoolean(
+      "figClientEntityEsp", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientEspPlayers = OptionInstance.createBoolean(
+      "figClientEspPlayers", OptionInstance.noTooltip(), true
+   );
+   private final OptionInstance<Boolean> figClientEspAnimals = OptionInstance.createBoolean(
+      "figClientEspAnimals", OptionInstance.noTooltip(), true
+   );
+   private final OptionInstance<Boolean> figClientEspMobs = OptionInstance.createBoolean(
+      "figClientEspMobs", OptionInstance.noTooltip(), true
+   );
+   private final OptionInstance<Boolean> figClientEspOther = OptionInstance.createBoolean(
+      "figClientEspOther", OptionInstance.noTooltip(), true
+   );
+   private final OptionInstance<Boolean> figClientEspTracers = OptionInstance.createBoolean(
+      "figClientEspTracers", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientTracerPlayers = OptionInstance.createBoolean("figClientTracerPlayers", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerAnimals = OptionInstance.createBoolean("figClientTracerAnimals", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerMobs = OptionInstance.createBoolean("figClientTracerMobs", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerOther = OptionInstance.createBoolean("figClientTracerOther", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerPlayerTarget = OptionInstance.createBoolean("figClientTracerPlayerTarget", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerPig = OptionInstance.createBoolean("figClientTracerPig", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerCow = OptionInstance.createBoolean("figClientTracerCow", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerSheep = OptionInstance.createBoolean("figClientTracerSheep", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerChicken = OptionInstance.createBoolean("figClientTracerChicken", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerZombie = OptionInstance.createBoolean("figClientTracerZombie", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerSkeleton = OptionInstance.createBoolean("figClientTracerSkeleton", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerCreeper = OptionInstance.createBoolean("figClientTracerCreeper", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerEnderman = OptionInstance.createBoolean("figClientTracerEnderman", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Boolean> figClientTracerDragon = OptionInstance.createBoolean("figClientTracerDragon", OptionInstance.noTooltip(), true);
+   private final OptionInstance<Integer> figClientTracerPlayerColor = figClientColorOption("figClientTracerPlayerColor", 0);
+   private final OptionInstance<Integer> figClientTracerAnimalColor = figClientColorOption("figClientTracerAnimalColor", 2);
+   private final OptionInstance<Integer> figClientTracerMobColor = figClientColorOption("figClientTracerMobColor", 1);
+   private final OptionInstance<Integer> figClientTracerOtherColor = figClientColorOption("figClientTracerOtherColor", 3);
+   private final OptionInstance<Integer> figClientEspPlayerColor = figClientColorOption("figClientEspPlayerColor", 0);
+   private final OptionInstance<Integer> figClientEspAnimalColor = figClientColorOption("figClientEspAnimalColor", 2);
+   private final OptionInstance<Integer> figClientEspMobColor = figClientColorOption("figClientEspMobColor", 1);
+   private final OptionInstance<Integer> figClientEspOtherColor = figClientColorOption("figClientEspOtherColor", 3);
+   private final OptionInstance<Boolean> figClientChestEsp = OptionInstance.createBoolean(
+      "figClientChestEsp", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientFlight = OptionInstance.createBoolean(
+      "figClientFlight", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientAirPlace = OptionInstance.createBoolean(
+      "figClientAirPlace", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientFreecam = OptionInstance.createBoolean(
+      "figClientFreecam", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Boolean> figClientCityEsp = OptionInstance.createBoolean(
+      "figClientCityEsp", OptionInstance.noTooltip(), false
+   );
+   private final OptionInstance<Integer> figClientChestEspColor = figClientColorOption("figClientChestEspColor", 0);
+   private final OptionInstance<Integer> figClientCityEspColor = figClientColorOption("figClientCityEspColor", 2);
+   private final OptionInstance<Boolean> figClientEspNormalChests = OptionInstance.createBoolean(
+      "figClientEspNormalChests", OptionInstance.noTooltip(), true
+   );
+   private final OptionInstance<Boolean> figClientEspEnderChests = OptionInstance.createBoolean(
+      "figClientEspEnderChests", OptionInstance.noTooltip(), true
+   );
+   private final OptionInstance<Boolean> figClientEspTrappedChests = OptionInstance.createBoolean(
+      "figClientEspTrappedChests", OptionInstance.noTooltip(), true
+   );
+   private final OptionInstance<Boolean> figClientEspBarrels = OptionInstance.createBoolean(
+      "figClientEspBarrels", OptionInstance.noTooltip(), true
+   );
+   private final OptionInstance<Boolean> figClientEspShulkers = OptionInstance.createBoolean(
+      "figClientEspShulkers", OptionInstance.noTooltip(), true
+   );
    private final OptionInstance<Integer> figClientAutoTotemHealth = new OptionInstance<>(
       "figClientAutoTotemHealth",
       OptionInstance.noTooltip(),
@@ -191,6 +263,11 @@ public class Options {
          0,
          OptionInstance.NO_ACTION
       );
+   }
+
+   private static OptionInstance<Integer> figClientColorOption(final String name, final int defaultColor) {
+      return new OptionInstance<>(name, OptionInstance.noTooltip(), (caption, value) -> Component.literal(Integer.toString(value)),
+         new OptionInstance.IntRange(0, 4), defaultColor, OptionInstance.NO_ACTION);
    }
    private final OptionInstance<Double> entityDistanceScaling = new OptionInstance<>(
       "options.entityDistanceScaling",
@@ -800,6 +877,15 @@ public class Options {
    public final KeyMapping keyFigEntityCulling = new KeyMapping("key.fig.entityCulling", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
    public final KeyMapping keyFigXray = new KeyMapping("key.fig.xray", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
    public final KeyMapping keyFigAutoTotem = new KeyMapping("key.fig.autoTotem", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+   public final KeyMapping keyFigFoodInfo = new KeyMapping("key.fig.foodInfo", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+   public final KeyMapping keyFigInventorySort = new KeyMapping("key.fig.inventorySort", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+   public final KeyMapping keyFigEntityEsp = new KeyMapping("key.fig.entityEsp", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+   public final KeyMapping keyFigTracers = new KeyMapping("key.fig.tracers", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+   public final KeyMapping keyFigChestEsp = new KeyMapping("key.fig.chestEsp", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+   public final KeyMapping keyFigFlight = new KeyMapping("key.fig.flight", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+   public final KeyMapping keyFigAirPlace = new KeyMapping("key.fig.airPlace", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
+   public final KeyMapping keyFigFreecam = new KeyMapping("key.fig.freecam", InputConstants.Type.KEYSYM, 82, KeyMapping.Category.MISC);
+   public final KeyMapping keyFigCityEsp = new KeyMapping("key.fig.cityEsp", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
    public final KeyMapping keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), KeyMapping.Category.MISC);
    public final KeyMapping keyFullscreen = new KeyMapping("key.fullscreen", 300, KeyMapping.Category.MISC);
    public final KeyMapping keyAdvancements = new KeyMapping("key.advancements", 76, KeyMapping.Category.MISC);
@@ -907,6 +993,15 @@ public class Options {
             this.keyFigEntityCulling,
             this.keyFigXray,
             this.keyFigAutoTotem,
+            this.keyFigFoodInfo,
+            this.keyFigInventorySort,
+            this.keyFigEntityEsp,
+            this.keyFigTracers,
+            this.keyFigChestEsp,
+            this.keyFigFlight,
+            this.keyFigAirPlace,
+            this.keyFigFreecam,
+            this.keyFigCityEsp,
             this.keySmoothCamera,
             this.keyFullscreen,
             this.keySpectatorOutlines,
@@ -1228,6 +1323,113 @@ public class Options {
 
    public OptionInstance<Boolean> figClientEntityCulling() {
       return this.figClientEntityCulling;
+   }
+
+   public OptionInstance<Boolean> figClientEntityEsp() {
+      return this.figClientEntityEsp;
+   }
+
+   public OptionInstance<Boolean> figClientEspPlayers() {
+      return this.figClientEspPlayers;
+   }
+
+   public OptionInstance<Boolean> figClientEspAnimals() {
+      return this.figClientEspAnimals;
+   }
+
+   public OptionInstance<Boolean> figClientEspMobs() {
+      return this.figClientEspMobs;
+   }
+
+   public OptionInstance<Boolean> figClientEspOther() {
+      return this.figClientEspOther;
+   }
+
+   public OptionInstance<Boolean> figClientEspTracers() {
+      return this.figClientEspTracers;
+   }
+
+   public OptionInstance<Boolean> figClientTracerPlayers() { return this.figClientTracerPlayers; }
+   public OptionInstance<Boolean> figClientTracerAnimals() { return this.figClientTracerAnimals; }
+   public OptionInstance<Boolean> figClientTracerMobs() { return this.figClientTracerMobs; }
+   public OptionInstance<Boolean> figClientTracerOther() { return this.figClientTracerOther; }
+   public OptionInstance<Boolean> figClientTracerPlayerTarget() { return this.figClientTracerPlayerTarget; }
+   public OptionInstance<Boolean> figClientTracerPig() { return this.figClientTracerPig; }
+   public OptionInstance<Boolean> figClientTracerCow() { return this.figClientTracerCow; }
+   public OptionInstance<Boolean> figClientTracerSheep() { return this.figClientTracerSheep; }
+   public OptionInstance<Boolean> figClientTracerChicken() { return this.figClientTracerChicken; }
+   public OptionInstance<Boolean> figClientTracerZombie() { return this.figClientTracerZombie; }
+   public OptionInstance<Boolean> figClientTracerSkeleton() { return this.figClientTracerSkeleton; }
+   public OptionInstance<Boolean> figClientTracerCreeper() { return this.figClientTracerCreeper; }
+   public OptionInstance<Boolean> figClientTracerEnderman() { return this.figClientTracerEnderman; }
+   public OptionInstance<Boolean> figClientTracerDragon() { return this.figClientTracerDragon; }
+   public OptionInstance<Integer> figClientTracerPlayerColor() { return this.figClientTracerPlayerColor; }
+   public OptionInstance<Integer> figClientTracerAnimalColor() { return this.figClientTracerAnimalColor; }
+   public OptionInstance<Integer> figClientTracerMobColor() { return this.figClientTracerMobColor; }
+   public OptionInstance<Integer> figClientTracerOtherColor() { return this.figClientTracerOtherColor; }
+
+   public OptionInstance<Integer> figClientEspPlayerColor() {
+      return this.figClientEspPlayerColor;
+   }
+
+   public OptionInstance<Integer> figClientEspAnimalColor() {
+      return this.figClientEspAnimalColor;
+   }
+
+   public OptionInstance<Integer> figClientEspMobColor() {
+      return this.figClientEspMobColor;
+   }
+
+   public OptionInstance<Integer> figClientEspOtherColor() {
+      return this.figClientEspOtherColor;
+   }
+
+   public OptionInstance<Boolean> figClientChestEsp() {
+      return this.figClientChestEsp;
+   }
+
+   public OptionInstance<Boolean> figClientFlight() {
+      return this.figClientFlight;
+   }
+
+   public OptionInstance<Boolean> figClientAirPlace() {
+      return this.figClientAirPlace;
+   }
+
+   public OptionInstance<Boolean> figClientFreecam() {
+      return this.figClientFreecam;
+   }
+
+   public OptionInstance<Boolean> figClientCityEsp() {
+      return this.figClientCityEsp;
+   }
+
+   public OptionInstance<Integer> figClientCityEspColor() {
+      return this.figClientCityEspColor;
+   }
+
+   public OptionInstance<Boolean> figClientEspNormalChests() {
+      return this.figClientEspNormalChests;
+   }
+
+   public OptionInstance<Boolean> figClientEspEnderChests() {
+      return this.figClientEspEnderChests;
+   }
+
+   public OptionInstance<Boolean> figClientEspTrappedChests() {
+      return this.figClientEspTrappedChests;
+   }
+
+   public OptionInstance<Boolean> figClientEspBarrels() {
+      return this.figClientEspBarrels;
+   }
+
+   public OptionInstance<Boolean> figClientEspShulkers() {
+      return this.figClientEspShulkers;
+   }
+
+   public OptionInstance<Integer> figClientChestEspColor() {
+      return this.figClientChestEspColor;
    }
 
    public OptionInstance<Boolean> figClientAutoRefill() {
@@ -1813,6 +2015,46 @@ public class Options {
       access.process("figClientPreviousDeath", this.figClientPreviousDeath);
       access.process("figClientChunkSaver", this.figClientChunkSaver);
       access.process("figClientEntityCulling", this.figClientEntityCulling);
+      access.process("figClientEntityEsp", this.figClientEntityEsp);
+      access.process("figClientEspPlayers", this.figClientEspPlayers);
+      access.process("figClientEspAnimals", this.figClientEspAnimals);
+      access.process("figClientEspMobs", this.figClientEspMobs);
+      access.process("figClientEspOther", this.figClientEspOther);
+      access.process("figClientEspTracers", this.figClientEspTracers);
+      access.process("figClientTracerPlayers", this.figClientTracerPlayers);
+      access.process("figClientTracerAnimals", this.figClientTracerAnimals);
+      access.process("figClientTracerMobs", this.figClientTracerMobs);
+      access.process("figClientTracerOther", this.figClientTracerOther);
+      access.process("figClientTracerPlayerTarget", this.figClientTracerPlayerTarget);
+      access.process("figClientTracerPig", this.figClientTracerPig);
+      access.process("figClientTracerCow", this.figClientTracerCow);
+      access.process("figClientTracerSheep", this.figClientTracerSheep);
+      access.process("figClientTracerChicken", this.figClientTracerChicken);
+      access.process("figClientTracerZombie", this.figClientTracerZombie);
+      access.process("figClientTracerSkeleton", this.figClientTracerSkeleton);
+      access.process("figClientTracerCreeper", this.figClientTracerCreeper);
+      access.process("figClientTracerEnderman", this.figClientTracerEnderman);
+      access.process("figClientTracerDragon", this.figClientTracerDragon);
+      access.process("figClientTracerPlayerColor", this.figClientTracerPlayerColor);
+      access.process("figClientTracerAnimalColor", this.figClientTracerAnimalColor);
+      access.process("figClientTracerMobColor", this.figClientTracerMobColor);
+      access.process("figClientTracerOtherColor", this.figClientTracerOtherColor);
+      access.process("figClientEspPlayerColor", this.figClientEspPlayerColor);
+      access.process("figClientEspAnimalColor", this.figClientEspAnimalColor);
+      access.process("figClientEspMobColor", this.figClientEspMobColor);
+      access.process("figClientEspOtherColor", this.figClientEspOtherColor);
+      access.process("figClientChestEsp", this.figClientChestEsp);
+      access.process("figClientChestEspColor", this.figClientChestEspColor);
+      access.process("figClientFlight", this.figClientFlight);
+      access.process("figClientAirPlace", this.figClientAirPlace);
+      access.process("figClientFreecam", this.figClientFreecam);
+      access.process("figClientCityEsp", this.figClientCityEsp);
+      access.process("figClientCityEspColor", this.figClientCityEspColor);
+      access.process("figClientEspNormalChests", this.figClientEspNormalChests);
+      access.process("figClientEspEnderChests", this.figClientEspEnderChests);
+      access.process("figClientEspTrappedChests", this.figClientEspTrappedChests);
+      access.process("figClientEspBarrels", this.figClientEspBarrels);
+      access.process("figClientEspShulkers", this.figClientEspShulkers);
       access.process("figClientAutoRefill", this.figClientAutoRefill);
       access.process("figClientAutoTotem", this.figClientAutoTotem);
       access.process("figClientAutoTotemHealth", this.figClientAutoTotemHealth);

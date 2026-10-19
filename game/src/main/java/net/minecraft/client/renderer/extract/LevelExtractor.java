@@ -6,10 +6,12 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
 import net.minecraft.SharedConstants;
@@ -44,8 +46,12 @@ import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.client.renderer.state.level.SectionUpdateRenderState;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.SectionPos;
 import net.minecraft.gizmos.Gizmos;
+import net.minecraft.gizmos.GizmoStyle;
 import net.minecraft.gizmos.SimpleGizmoCollector;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -59,8 +65,17 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -199,6 +214,8 @@ public class LevelExtractor implements ResourceManagerReloadListener {
 
       profiler.popPush("entities");
       this.extractVisibleEntities(camera, cullFrustum, deltaTracker, this.levelRenderState);
+      this.extractFigTracers(this.levelRenderState);
+      this.extractFigCityEsp();
       profiler.popPush("blockEntities");
       this.extractVisibleBlockEntities(camera, cullFrustum, deltaPartialTick, this.levelRenderState);
       profiler.popPush("blockOutline");
@@ -282,6 +299,90 @@ public class LevelExtractor implements ResourceManagerReloadListener {
       output.lastEntityRenderStateCount = output.entityRenderStates.size();
    }
 
+   private void extractFigTracers(final LevelRenderState output) {
+      Options options = this.minecraft.options;
+      if (!options.figClientEspTracers().get() || this.minecraft.player == null) {
+         return;
+      }
+      Vec3 playerFeet = this.minecraft.player.position();
+      for (EntityRenderState state : output.entityRenderStates) {
+         int color = this.figTracerColor(options, state);
+         if (color != 0) {
+            Vec3 targetFeet = new Vec3(state.x, state.y, state.z);
+            if (targetFeet.distanceToSqr(playerFeet) > 0.0625) {
+               Gizmos.line(playerFeet, targetFeet, color, 1.8F).setAlwaysOnTop();
+            }
+         }
+      }
+   }
+
+   private int figTracerColor(final Options options, final EntityRenderState state) {
+      EntityType<?> type = state.entityType;
+      if (type == null) {
+         return 0;
+      }
+      if (type == EntityTypes.PLAYER) {
+         return options.figClientTracerPlayers().get() && options.figClientTracerPlayerTarget().get()
+            ? net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientTracerPlayerColor().get()) : 0;
+      }
+      if (type == EntityTypes.PIG && !options.figClientTracerPig().get()
+          || type == EntityTypes.COW && !options.figClientTracerCow().get()
+          || type == EntityTypes.SHEEP && !options.figClientTracerSheep().get()
+          || type == EntityTypes.CHICKEN && !options.figClientTracerChicken().get()
+          || type == EntityTypes.ZOMBIE && !options.figClientTracerZombie().get()
+          || type == EntityTypes.SKELETON && !options.figClientTracerSkeleton().get()
+          || type == EntityTypes.CREEPER && !options.figClientTracerCreeper().get()
+          || type == EntityTypes.ENDERMAN && !options.figClientTracerEnderman().get()
+          || type == EntityTypes.ENDER_DRAGON && !options.figClientTracerDragon().get()) {
+         return 0;
+      }
+      MobCategory category = type.getCategory();
+      if (category == MobCategory.MONSTER) {
+         return options.figClientTracerMobs().get()
+            ? net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientTracerMobColor().get()) : 0;
+      }
+      if (category == MobCategory.CREATURE || category == MobCategory.AMBIENT || category == MobCategory.AXOLOTLS
+          || category == MobCategory.UNDERGROUND_WATER_CREATURE || category == MobCategory.WATER_CREATURE
+          || category == MobCategory.WATER_AMBIENT) {
+         return options.figClientTracerAnimals().get()
+            ? net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientTracerAnimalColor().get()) : 0;
+      }
+      return options.figClientTracerOther().get()
+         ? net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientTracerOtherColor().get()) : 0;
+   }
+
+   private void extractFigCityEsp() {
+      Options options = this.minecraft.options;
+      if (!options.figClientCityEsp().get() || this.level == null) {
+         return;
+      }
+      int color = net.minecraft.client.gui.screens.options.FigEspColors.color(options.figClientCityEspColor().get());
+      Registry<Structure> structureRegistry = this.level.registryAccess().lookupOrThrow(Registries.STRUCTURE);
+      Set<Long> visitedChunks = new HashSet<>();
+      Set<Long> drawnCities = new HashSet<>();
+      for (SectionRenderDispatcher.RenderSection section : this.levelRenderer.visibleSections()) {
+         SectionPos sectionPos = SectionPos.of(section.getSectionNode());
+         long chunkPos = ChunkPos.pack(sectionPos.x(), sectionPos.z());
+         if (!visitedChunks.add(chunkPos)) {
+            continue;
+         }
+         LevelChunk chunk = this.level.getChunkSource().getChunk(sectionPos.x(), sectionPos.z(), ChunkStatus.FULL, false);
+         if (chunk == null) {
+            continue;
+         }
+         for (StructureStart start : chunk.getAllStarts().values()) {
+            if (start == StructureStart.INVALID_START || !"end_city".equals(structureRegistry.getKey(start.getStructure()).getPath())) {
+               continue;
+            }
+            net.minecraft.world.level.levelgen.structure.BoundingBox bounds = start.getBoundingBox();
+            long cityKey = BlockPos.asLong(bounds.minX(), bounds.minY(), bounds.minZ());
+            if (drawnCities.add(cityKey)) {
+               Gizmos.cuboid(net.minecraft.world.phys.AABB.of(bounds), GizmoStyle.stroke(color, 2.0F)).setAlwaysOnTop();
+            }
+         }
+      }
+   }
+
    public boolean isEntityVisible(final Entity entity, final Frustum frustum, final double camX, final double camY, final double camZ) {
       if (this.level == null) {
          return false;
@@ -297,7 +398,8 @@ public class LevelExtractor implements ResourceManagerReloadListener {
    }
 
    private boolean isEntityOccluded(final Entity entity, final double camX, final double camY, final double camZ) {
-      if (!this.minecraft.options.figClientEntityCulling().get() || entity == this.minecraft.player) {
+        if (!this.minecraft.options.figClientEntityCulling().get() || this.minecraft.options.figClientEntityEsp().get()
+           || this.minecraft.options.figClientEspTracers().get() || entity == this.minecraft.player) {
          return false;
       }
 

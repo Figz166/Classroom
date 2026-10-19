@@ -353,6 +353,9 @@ public class RenderTypes {
    private static final RenderType FIG_BLOCK_SEARCH = RenderType.create(
       "fig_block_search", RenderSetup.builder(RenderPipelines.FIG_BLOCK_SEARCH).sortOnUpload().createRenderSetup()
    );
+   private static final RenderType FIG_ESP_LINES = RenderType.create(
+      "fig_esp_lines", RenderSetup.builder(RenderPipelines.FIG_ESP_LINES).createRenderSetup()
+   );
    private static final RenderType DEBUG_POINT = RenderType.create("debug_point", RenderSetup.builder(RenderPipelines.DEBUG_POINTS).createRenderSetup());
    private static final RenderType DEBUG_QUADS = RenderType.create(
       "debug_quads", RenderSetup.builder(RenderPipelines.DEBUG_QUADS).sortOnUpload().createRenderSetup()
@@ -628,6 +631,10 @@ public class RenderTypes {
 
    public static RenderType figBlockSearch() {
       return FIG_BLOCK_SEARCH;
+   }
+
+   public static RenderType figEspLines() {
+      return FIG_ESP_LINES;
    }
 
    public static RenderType debugPoint() {
